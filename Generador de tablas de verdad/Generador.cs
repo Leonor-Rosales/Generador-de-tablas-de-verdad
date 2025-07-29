@@ -146,6 +146,13 @@ namespace Generador_de_tablas_de_verdad
 
            
             MessageBox.Show("La expresión tiene paréntesis balanceados.", "Correcto", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (!ValidadorExpresion.ValidarSintaxis(expresion))
+            {
+                MessageBox.Show("Error de sintaxis en la expresión.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            var variables = ValidadorExpresion.ExtraerVariables(expresion);//aqui estan las variables, solas por si sirven de algo
+            string expresionConvertida = ValidadorExpresion.Convertir(expresion);
         }
 
         private void dgvTabla_CellContentClick(object sender, DataGridViewCellEventArgs e)
