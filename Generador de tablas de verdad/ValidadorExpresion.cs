@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace Generador_de_tablas_de_verdad
 {
@@ -32,6 +30,7 @@ namespace Generador_de_tablas_de_verdad
 
             return VerificarParentesis(cadena, pos + 1, pila);
         }
+
         public static bool ValidarSintaxis(string exp)
         {
             for (int i = 0; i < exp.Length; i++)
@@ -39,27 +38,21 @@ namespace Generador_de_tablas_de_verdad
                 char actual = exp[i];
                 char? siguiente = (i < exp.Length - 1) ? exp[i + 1] : (char?)null;
 
-                // Doble operador binario
                 if ("∧∨→↔".Contains(actual) && siguiente != null && "∧∨→↔".Contains(siguiente.Value))
                     return false;
 
-                // Paréntesis vacíos
                 if (actual == '(' && siguiente == ')')
                     return false;
 
-                // Operador binario al principio o final
                 if (i == 0 && "∧∨→↔".Contains(actual)) return false;
                 if (i == exp.Length - 1 && "∧∨→↔".Contains(actual)) return false;
 
-                // ¬ no debe ir al final
                 if (actual == '¬' && siguiente == null) return false;
             }
 
             return true;
         }
 
-
-        // Extrae variables únicas en orden
         public static List<char> ExtraerVariables(string expresion)
         {
             return expresion
@@ -69,25 +62,140 @@ namespace Generador_de_tablas_de_verdad
                 .ToList();
         }
 
-        // Opcional: convertir a formato evaluable si usarán evaluador tipo C#
+        public static List<Dictionary<char, bool>> GenerarCombinaciones(List<char> variables)
+        {
+            int total = (int)Math.Pow(2, variables.Count);
+            List<Dictionary<char, bool>> combinaciones = new List<Dictionary<char, bool>>();
+
+            for (int i = 0; i < total; i++)
+            {
+                Dictionary<char, bool> fila = new Dictionary<char, bool>();
+                for (int j = 0; j < variables.Count; j++)
+                {
+                    bool valor = (i & (1 << (variables.Count - j - 1))) != 0;
+                    fila[variables[j]] = valor;
+                }
+                combinaciones.Add(fila);
+            }
+
+            return combinaciones;
+        }
+
         public static string Convertir(string expresion)
         {
-            // Primero convierte los operadores simples
-            string exp = expresion
-                .Replace("¬", "!")
-                .Replace("∧", "&&")
-                .Replace("∨", "||");
+            string exp = expresion;
 
-            // Convierte la implicación: A → B → !A || B
-            // Busca patrón letra→letra o paréntesis→letra, etc.
-            exp = Regex.Replace(exp, @"([A-Z\)])→([A-Z\(])", "!$1 || $2");
+            exp = exp.Replace("¬", "!");
+            exp = exp.Replace("∧", "&");
+            exp = exp.Replace("∨", "|");
 
-            // Convierte bicondicional: A ↔ B → (A && B) || (!A && !B)
-            // Esto ya es más complejo, puedes usar este patrón básico:
-            exp = Regex.Replace(exp, @"([A-Z])↔([A-Z])", "($1 && $2) || (!$1 && !$2)");
+            // Implicación: A → B  == !A | B
+            exp = Regex.Replace(exp, @"([a-z])\s*→\s*([a-z])", "!$1|$2");
+
+            // Doble implicación: A ↔ B == (A & B) | (!A & !B)
+            exp = Regex.Replace(exp, @"([a-z])\s*↔\s*([a-z])", "($1&$2)|(!$1&!$2)");
 
             return exp;
         }
+
+        public static bool EvaluarExpresion(string expresionConvertida, Dictionary<char, bool> valores)
+        {
+            string exp = expresionConvertida;
+
+            foreach (var variable in valores)
+            {
+                exp = Regex.Replace(exp, $@"\b{variable.Key}\b", variable.Value ? "1" : "0");
+            }
+
+            return Evaluar(exp);
+        }
+
+        private static bool Evaluar(string expr)
+        {
+            Stack<bool> valores = new Stack<bool>();
+            Stack<char> operadores = new Stack<char>();
+
+            int i = 0;
+            while (i < expr.Length)
+            {
+                char c = expr[i];
+
+                if (c == ' ')
+                {
+                    i++;
+                    continue;
+                }
+
+                if (c == '0' || c == '1')
+                {
+                    valores.Push(c == '1');
+                    i++;
+                }
+                else if (c == '(')
+                {
+                    operadores.Push(c);
+                    i++;
+                }
+                else if (c == ')')
+                {
+                    while (operadores.Peek() != '(')
+                    {
+                        ProcesarOperacion(valores, operadores.Pop());
+                    }
+                    operadores.Pop(); // Eliminar '('
+                    i++;
+                }
+                else if ("!&|".Contains(c))
+                {
+                    while (operadores.Count > 0 && Prioridad(operadores.Peek()) >= Prioridad(c))
+                    {
+                        ProcesarOperacion(valores, operadores.Pop());
+                    }
+                    operadores.Push(c);
+                    i++;
+                }
+                else
+                {
+                    i++;
+                }
+            }
+
+            while (operadores.Count > 0)
+            {
+                ProcesarOperacion(valores, operadores.Pop());
+            }
+
+            return valores.Pop();
+        }
+
+        private static void ProcesarOperacion(Stack<bool> valores, char operador)
+        {
+            if (operador == '!')
+            {
+                bool a = valores.Pop();
+                valores.Push(!a);
+            }
+            else
+            {
+                bool b = valores.Pop();
+                bool a = valores.Pop();
+                switch (operador)
+                {
+                    case '&': valores.Push(a && b); break;
+                    case '|': valores.Push(a || b); break;
+                }
+            }
+        }
+
+        private static int Prioridad(char op)
+        {
+            switch (op)
+            {
+                case '!': return 3;
+                case '&': return 2;
+                case '|': return 1;
+                default: return 0;
+            }
+        }
     }
 }
-

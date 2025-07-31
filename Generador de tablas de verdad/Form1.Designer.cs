@@ -81,7 +81,7 @@
             nupCantidadVariables.Maximum = new decimal(new int[] { 10, 0, 0, 0 });
             nupCantidadVariables.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
             nupCantidadVariables.Name = "nupCantidadVariables";
-            nupCantidadVariables.Size = new Size(148, 37);
+            nupCantidadVariables.Size = new Size(148, 32);
             nupCantidadVariables.TabIndex = 1;
             nupCantidadVariables.Value = new decimal(new int[] { 1, 0, 0, 0 });
             // 
@@ -92,7 +92,7 @@
             label1.Location = new Point(111, 133);
             label1.Margin = new Padding(4, 0, 4, 0);
             label1.Name = "label1";
-            label1.Size = new Size(289, 30);
+            label1.Size = new Size(240, 23);
             label1.TabIndex = 0;
             label1.Text = "Cantidad de Variables:";
             // 
@@ -125,15 +125,17 @@
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(14F, 30F);
+            AutoScaleDimensions = new SizeF(12F, 23F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(183, 209, 163);
             ClientSize = new Size(864, 464);
             Controls.Add(panel1);
             Controls.Add(numAsignacion);
             Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            FormBorderStyle = FormBorderStyle.None;
             Margin = new Padding(4);
             Name = "Form1";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Form1";
             numAsignacion.ResumeLayout(false);
             numAsignacion.PerformLayout();

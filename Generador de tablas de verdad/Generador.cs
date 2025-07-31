@@ -1,13 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Data;
 using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Generador_de_tablas_de_verdad
 {
@@ -20,23 +16,23 @@ namespace Generador_de_tablas_de_verdad
             cantidadVariables = cantidad;
             GenerarBotonesVariables();
             GenerarBotonesFijos();
-            dgvTabla.BackgroundColor = ColorTranslator.FromHtml("#fcf7d3"); // color5
+            dgvTabla.BackgroundColor = ColorTranslator.FromHtml("#fcf7d3");
             dgvTabla.Font = new Font("Century Gothic", 12);
             dgvTabla.DefaultCellStyle.BackColor = ColorTranslator.FromHtml("#fcf7d3");
             dgvTabla.DefaultCellStyle.ForeColor = Color.Black;
-            dgvTabla.ColumnHeadersDefaultCellStyle.BackColor = ColorTranslator.FromHtml("#5e3929"); // color1
+            dgvTabla.ColumnHeadersDefaultCellStyle.BackColor = ColorTranslator.FromHtml("#5e3929");
             dgvTabla.ColumnHeadersDefaultCellStyle.ForeColor = Color.White;
         }
+
         private void GenerarBotonesVariables()
         {
-            flpVariables.Controls.Clear(); // Por si acaso
+            flpVariables.Controls.Clear();
             string[] variables = { "p", "q", "r", "s", "t", "u", "v", "w", "x", "y" };
 
             for (int i = 1; i <= cantidadVariables; i++)
             {
-
                 Button btnVariable = new Button();
-                btnVariable.Text = variables[i-1];
+                btnVariable.Text = variables[i - 1];
                 btnVariable.Width = 90;
                 btnVariable.Height = 90;
                 btnVariable.Margin = new Padding(10);
@@ -45,11 +41,10 @@ namespace Generador_de_tablas_de_verdad
                 btnVariable.Font = new Font("Century Gothic", 14);
                 btnVariable.FlatStyle = FlatStyle.Flat;
                 btnVariable.Click += Variable_Click;
-
                 flpVariables.Controls.Add(btnVariable);
             }
-            CentrarBotones();
 
+            CentrarBotones();
         }
 
         private void Variable_Click(object sender, EventArgs e)
@@ -74,10 +69,10 @@ namespace Generador_de_tablas_de_verdad
                 btn.Font = new Font("Century Gothic", 14);
                 btn.FlatStyle = FlatStyle.Flat;
                 btn.Click += Variable_Click;
-
                 flpOperadores.Controls.Add(btn);
             }
         }
+
         private void CentrarBotones()
         {
             int totalWidth = 0;
@@ -98,29 +93,25 @@ namespace Generador_de_tablas_de_verdad
                 flpVariables.Padding = new Padding(0);
             }
         }
+
         private void Generador_Load(object sender, EventArgs e)
         {
-
-
         }
 
         private void gbVariables_Enter(object sender, EventArgs e)
         {
-
         }
-
-
 
         private void ibSalir_Click(object sender, EventArgs e)
         {
-            Form1 formularioExpresion = new Form1();
-            formularioExpresion.Show();
-            this.Hide();
+            this.Close();
         }
 
         private void ibHome_Click(object sender, EventArgs e)
         {
-            this.Close();
+            Form1 formularioExpresion = new Form1();
+            formularioExpresion.Show();
+            this.Hide();
         }
 
         private void btnLimpiar_Click(object sender, EventArgs e)
@@ -144,20 +135,42 @@ namespace Generador_de_tablas_de_verdad
                 return;
             }
 
-           
-            MessageBox.Show("La expresión tiene paréntesis balanceados.", "Correcto", MessageBoxButtons.OK, MessageBoxIcon.Information);
             if (!ValidadorExpresion.ValidarSintaxis(expresion))
             {
                 MessageBox.Show("Error de sintaxis en la expresión.", "Error", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 return;
             }
-            var variables = ValidadorExpresion.ExtraerVariables(expresion);//aqui estan las variables, solas por si sirven de algo
+
+            var variables = ValidadorExpresion.ExtraerVariables(expresion);
             string expresionConvertida = ValidadorExpresion.Convertir(expresion);
+            MostrarTabla(expresion, expresionConvertida, variables);
+        }
+
+        private void MostrarTabla(string expresionOriginal, string expresionConvertida, List<char> variables)
+        {
+            dgvTabla.Columns.Clear();
+            dgvTabla.Rows.Clear();
+
+            foreach (char var in variables)
+            {
+                dgvTabla.Columns.Add(var.ToString(), var.ToString());
+            }
+
+            dgvTabla.Columns.Add("Resultado", expresionOriginal);
+
+            var combinaciones = ValidadorExpresion.GenerarCombinaciones(variables);
+
+            foreach (var combinacion in combinaciones)
+            {
+                bool resultado = ValidadorExpresion.EvaluarExpresion(expresionConvertida, combinacion);
+                List<string> fila = variables.Select(v => combinacion[v] ? "V" : "F").ToList();
+                fila.Add(resultado ? "V" : "F");
+                dgvTabla.Rows.Add(fila.ToArray());
+            }
         }
 
         private void dgvTabla_CellContentClick(object sender, DataGridViewCellEventArgs e)
         {
-
         }
     }
 }

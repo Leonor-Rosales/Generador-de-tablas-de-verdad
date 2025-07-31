@@ -193,7 +193,7 @@
             // 
             // Generador
             // 
-            AutoScaleDimensions = new SizeF(14F, 30F);
+            AutoScaleDimensions = new SizeF(12F, 23F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(183, 209, 163);
             ClientSize = new Size(1552, 1055);
@@ -206,8 +206,10 @@
             Controls.Add(gbVariables);
             Controls.Add(txtExpresion);
             Font = new Font("Century Gothic", 12F, FontStyle.Regular, GraphicsUnit.Point, 0);
+            FormBorderStyle = FormBorderStyle.None;
             Margin = new Padding(4);
             Name = "Generador";
+            StartPosition = FormStartPosition.CenterScreen;
             Text = "Generador";
             Load += Generador_Load;
             gbVariables.ResumeLayout(false);
