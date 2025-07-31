@@ -89,10 +89,8 @@ namespace Generador_de_tablas_de_verdad
             exp = exp.Replace("∧", "&");
             exp = exp.Replace("∨", "|");
 
-            // Implicación: A → B  == !A | B
             exp = Regex.Replace(exp, @"([a-z])\s*→\s*([a-z])", "!$1|$2");
 
-            // Doble implicación: A ↔ B == (A & B) | (!A & !B)
             exp = Regex.Replace(exp, @"([a-z])\s*↔\s*([a-z])", "($1&$2)|(!$1&!$2)");
 
             return exp;
@@ -142,7 +140,7 @@ namespace Generador_de_tablas_de_verdad
                     {
                         ProcesarOperacion(valores, operadores.Pop());
                     }
-                    operadores.Pop(); // Eliminar '('
+                    operadores.Pop(); 
                     i++;
                 }
                 else if ("!&|".Contains(c))
